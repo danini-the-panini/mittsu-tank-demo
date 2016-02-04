@@ -114,26 +114,55 @@ renderer.window.on_resize do |width, height|
   skybox_camera.update_projection_matrix
 end
 
+left_stick = Mittsu::Vector2.new
+right_stick = Mittsu::Vector2.new
+
+JOYSTICK_DEADZONE = 0.1
+JOYSTICK_SENSITIVITY = 0.05
+
+def rotate_turret(turret, amount)
+  turret.rotation.y += amount
+end
+
+def turn_tank(tank, turret, amount)
+  turret.rotation.y -= amount
+  tank.rotation.y += amount
+end
+
+def drive_tank(tank, amount)
+  tank.translate_z(-amount)
+end
+
 renderer.window.run do
+  if renderer.window.joystick_present?
+    axes = renderer.window.joystick_axes.map do |axis|
+      axis.abs < JOYSTICK_DEADZONE ? 0.0 : axis * JOYSTICK_SENSITIVITY
+    end
+    left_stick.set(axes[0], axes[1])
+    right_stick.set(axes[2], axes[3])
+
+    drive_tank(tank, -left_stick.y)
+    turn_tank(tank, turret, -left_stick.x)
+    rotate_turret(turret, -right_stick.x)
+  end
+
   if renderer.window.key_down?(GLFW_KEY_A)
-    turret.rotation.y -= 0.1
-    tank.rotation.y += 0.1
+    turn_tank(tank, turret, 0.1)
   end
   if renderer.window.key_down?(GLFW_KEY_D)
-    turret.rotation.y += 0.1
-    tank.rotation.y -= 0.1
+    turn_tank(tank, turret, -0.1)
   end
   if renderer.window.key_down?(GLFW_KEY_LEFT)
-    turret.rotation.y += 0.1
+    rotate_turret(turret, 0.1)
   end
   if renderer.window.key_down?(GLFW_KEY_RIGHT)
-    turret.rotation.y -= 0.1
+    rotate_turret(turret, -0.1)
   end
   if renderer.window.key_down?(GLFW_KEY_W)
-    tank.translate_z(-0.1)
+    drive_tank(tank, 0.1)
   end
   if renderer.window.key_down?(GLFW_KEY_S)
-    tank.translate_z(0.1)
+    drive_tank(tank, -0.1)
   end
 
   skybox_camera.quaternion.copy(camera.get_world_quaternion)
