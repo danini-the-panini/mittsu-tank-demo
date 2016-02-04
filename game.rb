@@ -50,17 +50,54 @@ floor = Mittsu::Mesh.new(
 floor.position.y = -5.0
 scene.add(floor)
 
-building = Mittsu::Mesh.new(
-  Mittsu::BoxGeometry.new(5.0, 10.0, 5.0),
-  Mittsu::MeshPhongMaterial.new(color: 0xffffff)
-)
-building.position.set(5.0, 5.0, 5.0)
-scene.add(building)
-
 loader = Mittsu::OBJMTLLoader.new
 
+things = [
+  'Kaktus',
+  'box',
+  'collumn',
+  'magicrock',
+  'rock',
+  'skull',
+  'stone',
+  'tent'
+].map do |name|
+  [name, loader.load("#{name}/#{name}.obj", "#{name}.mtl").tap do |thing|
+    thing.position.set(rand * 10.0 - 5.0, 0.0, rand * 10.0 - 5.0)
+    thing.rotation.y = rand * Math::PI * 2.0
+    thing.children.grep(Mittsu::Mesh).each { |o| o.material.side = Mittsu::DoubleSide }
+    scene.add(thing)
+  end]
+end.to_h
+
+things['Kaktus'].scale.set(0.1, 0.1, 0.1)
+things['skull'].scale.set(0.1, 0.1, 0.1)
+things['collumn'].tap { |c|
+  c.scale.set(2.0, 2.0, 2.0)
+  c.position.y = -1.0
+}
+things['rock'].tap { |c|
+  c.scale.set(2.0, 2.0, 2.0)
+  c.position.y = -2.0
+}
+things['magicrock'].tap { |c|
+  c.scale.set(2.0, 2.0, 2.0)
+  c.position.y = -2.0
+}
+things['stone'].tap { |c|
+  c.scale.set(5.0, 5.0, 5.0)
+  c.position.y = -2.0
+}
+
+things.values.each do |thing|
+  3.times { thing.clone.tap do |thing2|
+    thing2.position.set(rand * 10.0 - 5.0, thing.position.y, rand * 10.0 - 5.0)
+    thing2.rotation.y = rand * Math::PI * 2.0
+    scene.add(thing2)
+  end }
+end
+
 object = loader.load('tank.obj', 'tank.mtl')
-object.print_tree
 
 tank = Mittsu::Object3D.new
 body, wheels, turret, tracks, barrel = [3,7,11,15,19].map { |i| object.children[i] }.each do |o|
@@ -76,8 +113,6 @@ tank.add(turret)
 barrel.position.set(0.0, 0.05, -0.03)
 turret.add(barrel)
 
-tank.print_tree
-
 tank.rotation.y = Math::PI
 scene.add(tank)
 
@@ -86,7 +121,7 @@ scene.traverse do |child|
   child.cast_shadow = true
 end
 
-sunlight = Mittsu::HemisphereLight.new(0xd3c0e8, 0xd7ad7e, 0.3)
+sunlight = Mittsu::HemisphereLight.new(0xd3c0e8, 0xd7ad7e, 0.7)
 scene.add(sunlight)
 
 light = Mittsu::SpotLight.new(0xffffff, 1.0)

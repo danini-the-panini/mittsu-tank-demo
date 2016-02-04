@@ -1,0 +1,12 @@
+# Blender MTL File: 'magicrock.blend'
+# Material Count: 1
+
+newmtl Material
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.392817 0.184592 0.051843
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd uvt_magicrock.png
