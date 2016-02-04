@@ -37,16 +37,17 @@ skybox_scene.add(skybox)
 def set_repeat(tex)
   tex.wrap_s = Mittsu::RepeatWrapping
   tex.wrap_t = Mittsu::RepeatWrapping
-  tex.repeat.set(100, 100)
+  tex.repeat.set(1000, 1000)
 end
 
 floor = Mittsu::Mesh.new(
-  Mittsu::BoxGeometry.new(1000.0, 10.0, 1000.0),
+  Mittsu::BoxGeometry.new(1.0, 1.0, 1.0),
   Mittsu::MeshPhongMaterial.new(
     map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert.jpg').tap { |t| set_repeat(t) },
     normal_map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert-normal.jpg').tap { |t| set_repeat(t) }
   )
 )
+floor.scale.set(10000.0, 10.0, 10000.0)
 floor.position.y = -5.0
 scene.add(floor)
 
@@ -120,7 +121,7 @@ end
 turret.position.set(0.0, 0.17, -0.17)
 tank.add(turret)
 
-barrel.position.set(0.0, 0.05, -0.03)
+barrel.position.set(0.0, 0.05, 0.2)
 turret.add(barrel)
 
 tank.rotation.y = Math::PI
@@ -151,8 +152,9 @@ light.shadow_camera_visible = false
 scene.add(light)
 
 camera.position.z = -3.0
-camera.position.y = 1.0
+camera.position.y = 2.0
 camera.rotation.y = Math::PI
+camera.rotation.x = Math::PI/6.0
 
 barrel.add(camera)
 
@@ -184,10 +186,10 @@ end
 
 def lift_barrel(barrel, amount)
   barrel.rotation.x += amount
-  if barrel.rotation.x > Math::PI/18.0
-    barrel.rotation.x = Math::PI/18.0
-  elsif barrel.rotation.x < -Math::PI/9.0
-    barrel.rotation.x = -Math::PI/9.0
+  if barrel.rotation.x > 0
+    barrel.rotation.x = 0
+  elsif barrel.rotation.x < -Math::PI/6.0
+    barrel.rotation.x = -Math::PI/6.0
   end
 end
 
