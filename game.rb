@@ -154,7 +154,7 @@ camera.position.z = -3.0
 camera.position.y = 1.0
 camera.rotation.y = Math::PI
 
-turret.add(camera)
+barrel.add(camera)
 
 renderer.window.on_resize do |width, height|
   renderer.set_viewport(0, 0, width, height)
@@ -182,6 +182,15 @@ def drive_tank(tank, amount)
   tank.translate_z(amount)
 end
 
+def lift_barrel(barrel, amount)
+  barrel.rotation.x += amount
+  if barrel.rotation.x > Math::PI/18.0
+    barrel.rotation.x = Math::PI/18.0
+  elsif barrel.rotation.x < -Math::PI/9.0
+    barrel.rotation.x = -Math::PI/9.0
+  end
+end
+
 x = 0
 renderer.window.run do
   if renderer.window.joystick_present?
@@ -194,6 +203,7 @@ renderer.window.run do
     drive_tank(tank, -left_stick.y)
     turn_tank(tank, turret, -left_stick.x)
     rotate_turret(turret, -right_stick.x)
+    lift_barrel(barrel, right_stick.y)
   end
 
   if renderer.window.key_down?(GLFW_KEY_A)
@@ -213,6 +223,12 @@ renderer.window.run do
   end
   if renderer.window.key_down?(GLFW_KEY_S)
     drive_tank(tank, -JOYSTICK_SENSITIVITY)
+  end
+  if renderer.window.key_down?(GLFW_KEY_UP)
+    lift_barrel(barrel, -JOYSTICK_SENSITIVITY)
+  end
+  if renderer.window.key_down?(GLFW_KEY_DOWN)
+    lift_barrel(barrel, JOYSTICK_SENSITIVITY)
   end
 
   shiny_balls.each_with_index do |ball, i|
