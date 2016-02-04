@@ -11,6 +11,8 @@ skybox_camera = Mittsu::PerspectiveCamera.new(75.0, ASPECT, 1.0, 100.0)
 
 renderer = Mittsu::OpenGLRenderer.new width: SCREEN_WIDTH, height: SCREEN_HEIGHT, title: 'Hello World'
 renderer.auto_clear = false
+renderer.shadow_map_enabled = true
+renderer.shadow_map_type = Mittsu::PCFSoftShadowMap
 
 texture = Mittsu::ImageUtils.load_texture_cube(
   [ 'rt', 'lf', 'up', 'dn', 'bk', 'ft' ].map { |path|
@@ -32,37 +34,75 @@ skybox_material = Mittsu::ShaderMaterial.new({
 skybox = Mittsu::Mesh.new(Mittsu::BoxGeometry.new(100, 100, 100), skybox_material)
 skybox_scene.add(skybox)
 
-light = Mittsu::HemisphereLight.new(0xCCF2FF, 0x055E00, 0.5)
-scene.add(light)
+def set_repeat(tex)
+  tex.wrap_s = Mittsu::RepeatWrapping
+  tex.wrap_t = Mittsu::RepeatWrapping
+  tex.repeat.set(100, 100)
+end
 
 floor = Mittsu::Mesh.new(
   Mittsu::BoxGeometry.new(1000.0, 10.0, 1000.0),
-  Mittsu::MeshPhongMaterial.new(color: 0xffffff)
+  Mittsu::MeshPhongMaterial.new(
+    map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert.jpg').tap { |t| set_repeat(t) },
+    normal_map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert-normal.jpg').tap { |t| set_repeat(t) }
+  )
 )
 floor.position.y = -5.0
 scene.add(floor)
 
 building = Mittsu::Mesh.new(
-  Mittsu::BoxGeometry.new(5.0, 20.0, 5.0),
+  Mittsu::BoxGeometry.new(5.0, 10.0, 5.0),
   Mittsu::MeshPhongMaterial.new(color: 0xffffff)
 )
-building.position.set(5.0, 10.0, 5.0)
+building.position.set(5.0, 5.0, 5.0)
 scene.add(building)
 
 tank = Mittsu::Mesh.new(
-  Mittsu::BoxGeometry.new(0.5, 0.2, 0.7),
-  Mittsu::MeshPhongMaterial.new(color: 0xffffff)
+  Mittsu::BoxGeometry.new(0.5, 0.3, 0.7),
+  Mittsu::MeshPhongMaterial.new(color: 0x00ff00)
 )
 tank.position.y = 0.1
 scene.add(tank)
 turret = Mittsu::Mesh.new(
-  Mittsu::BoxGeometry.new(0.3, 0.1, 0.3),
-  Mittsu::MeshPhongMaterial.new(color: 0xffffff)
+  Mittsu::BoxGeometry.new(0.3, 0.2, 0.3),
+  Mittsu::MeshPhongMaterial.new(color: 0x0000ff)
 )
-turret.position.y = 0.15
+turret.position.y = 0.25
 tank.add(turret)
 
-camera.position.z = 5.0
+barrel = Mittsu::Mesh.new(
+  Mittsu::BoxGeometry.new(0.1, 0.1, 0.5),
+  Mittsu::MeshPhongMaterial.new(color: 0xff0000)
+)
+barrel.position.y = 0.025
+barrel.position.z = -0.25
+turret.add(barrel)
+
+scene.traverse do |object|
+  object.receive_shadow = true
+  object.cast_shadow = true
+end
+
+sunlight = Mittsu::HemisphereLight.new(0xCCF2FF, 0x055E00, 0.5)
+scene.add(sunlight)
+
+light = Mittsu::SpotLight.new(0xffffff, 1.0)
+light.position.set(20.0, 30.0, 0.0)
+
+light.cast_shadow = true
+light.shadow_darkness = 0.5
+
+light.shadow_map_width = 2048
+light.shadow_map_height = 2048
+
+light.shadow_camera_near = 1.0
+light.shadow_camera_far = 100.0
+light.shadow_camera_fov = 60.0
+
+light.shadow_camera_visible = false
+scene.add(light)
+
+camera.position.z = 3.0
 camera.position.y = 1.0
 
 turret.add(camera)
