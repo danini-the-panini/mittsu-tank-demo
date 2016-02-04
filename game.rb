@@ -186,8 +186,8 @@ end
 
 def lift_barrel(barrel, amount)
   barrel.rotation.x += amount
-  if barrel.rotation.x > 0
-    barrel.rotation.x = 0
+  if barrel.rotation.x > Math::PI/36.0
+    barrel.rotation.x = Math::PI/36.0
   elsif barrel.rotation.x < -Math::PI/6.0
     barrel.rotation.x = -Math::PI/6.0
   end
