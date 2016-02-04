@@ -14,14 +14,14 @@ renderer.auto_clear = false
 renderer.shadow_map_enabled = true
 renderer.shadow_map_type = Mittsu::PCFSoftShadowMap
 
-texture = Mittsu::ImageUtils.load_texture_cube(
+cube_map_texture = Mittsu::ImageUtils.load_texture_cube(
   [ 'rt', 'lf', 'up', 'dn', 'bk', 'ft' ].map { |path|
     File.join File.dirname(__FILE__), "alpha-island_#{path}.png"
   }
 )
 
 shader = Mittsu::ShaderLib[:cube]
-shader.uniforms['tCube'].value = texture
+shader.uniforms['tCube'].value = cube_map_texture
 
 skybox_material = Mittsu::ShaderMaterial.new({
   fragment_shader: shader.fragment_shader,
@@ -54,7 +54,6 @@ loader = Mittsu::OBJMTLLoader.new
 
 things = [
   'Kaktus',
-  'box',
   'collumn',
   'magicrock',
   'rock',
@@ -86,15 +85,26 @@ things['magicrock'].tap { |c|
 }
 things['stone'].tap { |c|
   c.scale.set(5.0, 5.0, 5.0)
-  c.position.y = -2.0
+  c.position.y = -2.5
 }
 
 things.values.each do |thing|
   3.times { thing.clone.tap do |thing2|
     thing2.position.set(rand * 10.0 - 5.0, thing.position.y, rand * 10.0 - 5.0)
-    thing2.rotation.y = rand * Math::PI * 2.0
+    thing2.rotation.set(0.0, rand * Math::PI * 2.0, 0.0, 'XYZ')
     scene.add(thing2)
   end }
+end
+
+ball_geometry = Mittsu::SphereGeometry.new(1.0, 16, 16)
+ball_material = Mittsu::MeshPhongMaterial.new(env_map: cube_map_texture)
+shiny_balls = 10.times.map do
+  ball = Mittsu::Mesh.new(ball_geometry, ball_material)
+  ball.position.set(rand * 5.0 - 2.5, 0.0, rand * 5.0 - 2.5)
+  scale = rand * 0.5 + 0.1
+  ball.scale.set(scale, scale, scale)
+  scene.add(ball)
+  ball
 end
 
 object = loader.load('tank.obj', 'tank.mtl')
@@ -172,6 +182,7 @@ def drive_tank(tank, amount)
   tank.translate_z(amount)
 end
 
+x = 0
 renderer.window.run do
   if renderer.window.joystick_present?
     axes = renderer.window.joystick_axes.map do |axis|
@@ -203,6 +214,11 @@ renderer.window.run do
   if renderer.window.key_down?(GLFW_KEY_S)
     drive_tank(tank, -JOYSTICK_SENSITIVITY)
   end
+
+  shiny_balls.each_with_index do |ball, i|
+    ball.position.y = Math::sin(x * 0.005 + i.to_f) * 3.0 + 4.0
+  end
+  x += 1
 
   skybox_camera.quaternion.copy(camera.get_world_quaternion)
 
