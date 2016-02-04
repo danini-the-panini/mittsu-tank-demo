@@ -57,37 +57,40 @@ building = Mittsu::Mesh.new(
 building.position.set(5.0, 5.0, 5.0)
 scene.add(building)
 
-tank = Mittsu::Mesh.new(
-  Mittsu::BoxGeometry.new(0.5, 0.3, 0.7),
-  Mittsu::MeshPhongMaterial.new(color: 0x00ff00)
-)
-tank.position.y = 0.1
-scene.add(tank)
-turret = Mittsu::Mesh.new(
-  Mittsu::BoxGeometry.new(0.3, 0.2, 0.3),
-  Mittsu::MeshPhongMaterial.new(color: 0x0000ff)
-)
-turret.position.y = 0.25
-tank.add(turret)
+loader = Mittsu::OBJMTLLoader.new
 
-barrel = Mittsu::Mesh.new(
-  Mittsu::BoxGeometry.new(0.1, 0.1, 0.5),
-  Mittsu::MeshPhongMaterial.new(color: 0xff0000)
-)
-barrel.position.y = 0.025
-barrel.position.z = -0.25
-turret.add(barrel)
+object = loader.load('tank.obj', 'tank.mtl')
+object.print_tree
 
-scene.traverse do |object|
-  object.receive_shadow = true
-  object.cast_shadow = true
+tank = Mittsu::Object3D.new
+body, wheels, turret, tracks, barrel = [3,7,11,15,19].map { |i| object.children[i] }.each do |o|
+  o.material.metal = true
+end
+[body, wheels, tracks].each do |o|
+  tank.add(o)
 end
 
-sunlight = Mittsu::HemisphereLight.new(0xCCF2FF, 0x055E00, 0.5)
+turret.position.set(0.0, 0.17, -0.17)
+tank.add(turret)
+
+barrel.position.set(0.0, 0.05, -0.03)
+turret.add(barrel)
+
+tank.print_tree
+
+tank.rotation.y = Math::PI
+scene.add(tank)
+
+scene.traverse do |child|
+  child.receive_shadow = true
+  child.cast_shadow = true
+end
+
+sunlight = Mittsu::HemisphereLight.new(0xd3c0e8, 0xd7ad7e, 0.3)
 scene.add(sunlight)
 
 light = Mittsu::SpotLight.new(0xffffff, 1.0)
-light.position.set(20.0, 30.0, 0.0)
+light.position.set(0.0, 30.0, -30.0)
 
 light.cast_shadow = true
 light.shadow_darkness = 0.5
@@ -102,8 +105,9 @@ light.shadow_camera_fov = 60.0
 light.shadow_camera_visible = false
 scene.add(light)
 
-camera.position.z = 3.0
+camera.position.z = -3.0
 camera.position.y = 1.0
+camera.rotation.y = Math::PI
 
 turret.add(camera)
 
@@ -130,7 +134,7 @@ def turn_tank(tank, turret, amount)
 end
 
 def drive_tank(tank, amount)
-  tank.translate_z(-amount)
+  tank.translate_z(amount)
 end
 
 renderer.window.run do
@@ -147,22 +151,22 @@ renderer.window.run do
   end
 
   if renderer.window.key_down?(GLFW_KEY_A)
-    turn_tank(tank, turret, 0.1)
+    turn_tank(tank, turret, JOYSTICK_SENSITIVITY)
   end
   if renderer.window.key_down?(GLFW_KEY_D)
-    turn_tank(tank, turret, -0.1)
+    turn_tank(tank, turret, -JOYSTICK_SENSITIVITY)
   end
   if renderer.window.key_down?(GLFW_KEY_LEFT)
-    rotate_turret(turret, 0.1)
+    rotate_turret(turret, JOYSTICK_SENSITIVITY)
   end
   if renderer.window.key_down?(GLFW_KEY_RIGHT)
-    rotate_turret(turret, -0.1)
+    rotate_turret(turret, -JOYSTICK_SENSITIVITY)
   end
   if renderer.window.key_down?(GLFW_KEY_W)
-    drive_tank(tank, 0.1)
+    drive_tank(tank, JOYSTICK_SENSITIVITY)
   end
   if renderer.window.key_down?(GLFW_KEY_S)
-    drive_tank(tank, -0.1)
+    drive_tank(tank, -JOYSTICK_SENSITIVITY)
   end
 
   skybox_camera.quaternion.copy(camera.get_world_quaternion)
