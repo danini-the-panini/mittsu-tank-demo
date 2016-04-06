@@ -1,15 +1,11 @@
-PATH
-  remote: /Users/daniel/Projects/mittsu
-  specs:
-    mittsu (0.1.0)
-      ffi (~> 1.9)
-      opengl-bindings (~> 1.5)
-      rmagick (~> 2.15)
-
 GEM
   remote: https://rubygems.org/
   specs:
     ffi (1.9.10)
+    mittsu (0.1.1)
+      ffi (~> 1.9)
+      opengl-bindings (~> 1.5)
+      rmagick (~> 2.15)
     opengl-bindings (1.5.3)
     rmagick (2.15.4)
 
@@ -17,7 +13,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  mittsu!
+  mittsu
 
 BUNDLED WITH
    1.11.2
