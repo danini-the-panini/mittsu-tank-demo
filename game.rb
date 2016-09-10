@@ -110,9 +110,12 @@ end
 
 object = loader.load('tank.obj', 'tank.mtl')
 
+object.print_tree
+
 tank = Mittsu::Object3D.new
-body, wheels, turret, tracks, barrel = [3,7,11,15,19].map { |i| object.children[i] }.each do |o|
-  o.material.metal = true
+body, wheels, turret, tracks, barrel = object.children.map { |o| o.children.first }
+object.children.each do |o|
+  o.children.first.material.metal = true
 end
 [body, wheels, tracks].each do |o|
   tank.add(o)
