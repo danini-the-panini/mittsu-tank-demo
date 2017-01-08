@@ -43,8 +43,8 @@ end
 floor = Mittsu::Mesh.new(
   Mittsu::BoxGeometry.new(1.0, 1.0, 1.0),
   Mittsu::MeshPhongMaterial.new(
-    map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert.jpg').tap { |t| set_repeat(t) },
-    normal_map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert-normal.jpg').tap { |t| set_repeat(t) }
+    map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert.png').tap { |t| set_repeat(t) },
+    normal_map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert-normal.png').tap { |t| set_repeat(t) }
   )
 )
 floor.scale.set(10000.0, 10.0, 10000.0)
