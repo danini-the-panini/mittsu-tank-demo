@@ -213,7 +213,6 @@ renderer.window.run do
   shiny_balls.each do |ball|
     distance = ball.position.distance_to(tank.position)
     if distance < 1.0
-      puts "hit"
       # 配列から削除
       shiny_balls.delete(ball)
       # シーンから削除
