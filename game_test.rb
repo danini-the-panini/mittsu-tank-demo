@@ -118,7 +118,7 @@ object.children.each do |o|
   o.children.first.material.metal = true
 end
 [body, wheels, tracks].each do |o|
-  tank.add(o)
+  tank.add(camera)
 end
 
 turret.position.set(0.0, 0.17, -0.17)
@@ -159,7 +159,7 @@ camera.position.y = 2.0
 camera.rotation.y = Math::PI
 camera.rotation.x = Math::PI/6.0
 
-barrel.add(camera)
+/barrel.add(0)/
 
 renderer.window.on_resize do |width, height|
   renderer.set_viewport(0, 0, width, height)
@@ -215,8 +215,8 @@ def lift_camera(camaera, amount)
 =end
 
 #上下カメラ移動
-def lift_camera(camaera, amount)
-  camera.rotation.x += amount
+def lift_tank(tank, amount)
+  tank.rotation.x += amount
 end
 
 
@@ -287,12 +287,12 @@ renderer.window.run do
 
 
   if renderer.window.key_down?(GLFW_KEY_UP)
-    lift_camera(camera, -JOYSTICK_SENSITIVITY)
+    lift_tank(tank, -JOYSTICK_SENSITIVITY)
   end
 
 
   if renderer.window.key_down?(GLFW_KEY_DOWN)
-    lift_camera(camera, JOYSTICK_SENSITIVITY)
+    lift_tank(tank, JOYSTICK_SENSITIVITY)
   end
 
 
