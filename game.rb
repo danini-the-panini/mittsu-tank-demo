@@ -188,6 +188,7 @@ def drive_tank(tank, amount)
 end
 
 def lift_barrel(barrel, amount)
+  
   barrel.rotation.x += amount
   if barrel.rotation.x > Math::PI/36.0
     barrel.rotation.x = Math::PI/36.0
@@ -196,8 +197,23 @@ def lift_barrel(barrel, amount)
   end
 end
 
+title_geometry = Mittsu::BoxGeometry.new(1.5, 1, 1)
+title_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai.png')
+title_material = Mittsu::MeshBasicMaterial.new(map: title_texture)
+title_panel = Mittsu::Mesh.new(title_geometry, title_material)
+title_panel.position.y = +0.5
+title_panel.position.z = +2.5
+scene.add(title_panel)
+
 x = 0
+barrel.rotation.x = -Math::PI/6.0 
 renderer.window.run do
+
+  if renderer.window.key_down?(GLFW_KEY_SPACE)
+    scene.remove(title_panel)
+  end
+
+
   if renderer.window.joystick_present?
     axes = renderer.window.joystick_axes.map do |axis|
       axis.abs < JOYSTICK_DEADZONE ? 0.0 : axis * JOYSTICK_SENSITIVITY
@@ -211,30 +227,31 @@ renderer.window.run do
     lift_barrel(barrel, right_stick.y)
   end
 
-  if renderer.window.key_down?(GLFW_KEY_A)
-    turn_tank(tank, turret, JOYSTICK_SENSITIVITY)
-  end
-  if renderer.window.key_down?(GLFW_KEY_D)
-    turn_tank(tank, turret, -JOYSTICK_SENSITIVITY)
-  end
-  if renderer.window.key_down?(GLFW_KEY_LEFT)
-    rotate_turret(turret, JOYSTICK_SENSITIVITY)
-  end
-  if renderer.window.key_down?(GLFW_KEY_RIGHT)
-    rotate_turret(turret, -JOYSTICK_SENSITIVITY)
-  end
-  if renderer.window.key_down?(GLFW_KEY_W)
-    drive_tank(tank, JOYSTICK_SENSITIVITY)
-  end
-  if renderer.window.key_down?(GLFW_KEY_S)
-    drive_tank(tank, -JOYSTICK_SENSITIVITY)
-  end
-  if renderer.window.key_down?(GLFW_KEY_UP)
-    lift_barrel(barrel, -JOYSTICK_SENSITIVITY)
-  end
-  if renderer.window.key_down?(GLFW_KEY_DOWN)
-    lift_barrel(barrel, JOYSTICK_SENSITIVITY)
-  end
+  
+    if renderer.window.key_down?(GLFW_KEY_A)
+      turn_tank(tank, turret, JOYSTICK_SENSITIVITY)
+    end
+    if renderer.window.key_down?(GLFW_KEY_D)
+      turn_tank(tank, turret, -JOYSTICK_SENSITIVITY)
+    end
+    if renderer.window.key_down?(GLFW_KEY_LEFT)
+      rotate_turret(turret, JOYSTICK_SENSITIVITY)
+    end
+    if renderer.window.key_down?(GLFW_KEY_RIGHT)
+      rotate_turret(turret, -JOYSTICK_SENSITIVITY)
+    end
+    if renderer.window.key_down?(GLFW_KEY_W)
+      drive_tank(tank, JOYSTICK_SENSITIVITY)
+    end
+    if renderer.window.key_down?(GLFW_KEY_S)
+      drive_tank(tank, -JOYSTICK_SENSITIVITY)
+    end
+    if renderer.window.key_down?(GLFW_KEY_UP)
+      lift_barrel(barrel, -JOYSTICK_SENSITIVITY)
+    end
+    if renderer.window.key_down?(GLFW_KEY_DOWN)
+      lift_barrel(barrel, JOYSTICK_SENSITIVITY)
+    end
 
   shiny_balls.each_with_index do |ball, i|
     ball.position.y = Math::sin(x * 0.005 + i.to_f) * 3.0 + 4.0
