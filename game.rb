@@ -288,19 +288,6 @@ renderer.window.run do
     rotate_tank(tank, -JOYSTICK_SENSITIVITY)
   end
 
-
-  if renderer.window.key_down?(GLFW_KEY_UP)
-    lift_tank(tank, -JOYSTICK_SENSITIVITY)
-  end
-
-
-  if renderer.window.key_down?(GLFW_KEY_DOWN)
-    lift_tank(tank, JOYSTICK_SENSITIVITY)
-  end
-
-
-
-
   shiny_balls.each_with_index do |ball, i|
     ball.position.y = Math::sin(x * 0.005 + i.to_f) * 3.0 + 4.0
   end
