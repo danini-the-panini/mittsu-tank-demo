@@ -101,7 +101,7 @@ ball_geometry = Mittsu::SphereGeometry.new(1.0, 16, 16)
 ball_material = Mittsu::MeshPhongMaterial.new(env_map: cube_map_texture)
 shiny_balls = 10.times.map do
   ball = Mittsu::Mesh.new(ball_geometry, ball_material)
-  ball.position.set(rand * 35.0 - 2.5, rand * 25 + 5, rand * 35.0 - 2.5)
+  ball.position.set(rand * 35.0 - 10.0, rand * 25 + 5, rand * 35.0 - 40.0)
   scale = 0.5
   ball.scale.set(scale, scale, scale)
   scene.add(ball)
