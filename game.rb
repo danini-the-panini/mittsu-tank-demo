@@ -101,8 +101,8 @@ ball_geometry = Mittsu::SphereGeometry.new(1.0, 16, 16)
 ball_material = Mittsu::MeshPhongMaterial.new(env_map: cube_map_texture)
 shiny_balls = 10.times.map do
   ball = Mittsu::Mesh.new(ball_geometry, ball_material)
-  ball.position.set(rand * 5.0 - 2.5, 0.0, rand * 5.0 - 2.5)
-  scale = rand * 0.5 + 0.1
+  ball.position.set(rand * 35.0 - 2.5, rand * 25 + 5, rand * 35.0 - 2.5)
+  scale = 0.5
   ball.scale.set(scale, scale, scale)
   scene.add(ball)
   ball
@@ -198,6 +198,7 @@ def drive_ud(tank, amount)
 end
 
 
+
 #左右カメラ移動
 def rotate_tank(tank, amount)
   tank.rotation.y += amount
@@ -219,13 +220,9 @@ def lift_tank(tank, amount)
   tank.rotation.x += amount
 end
 
-
-
-
-
-
-
 x = 0
+
+
 renderer.window.run do
   if renderer.window.joystick_present?
     axes = renderer.window.joystick_axes.map do |axis|
@@ -241,9 +238,15 @@ renderer.window.run do
   end
 
 
-
-
-
+  shiny_balls.each do |ball|
+    distance = ball.position.distance_to(tank.position)
+    if distance < 1.0
+      # 配列から削除
+      shiny_balls.delete(ball)
+      # シーンから削除
+      scene.remove(ball)
+    end
+  end
 
 
   if renderer.window.key_down?(GLFW_KEY_A)
@@ -297,13 +300,14 @@ renderer.window.run do
 
 
 
+
   shiny_balls.each_with_index do |ball, i|
     ball.position.y = Math::sin(x * 0.005 + i.to_f) * 3.0 + 4.0
   end
   x += 1
 
-  skybox_camera.quaternion.copy(camera.get_world_quaternion)
 
+  skybox_camera.quaternion.copy(camera.get_world_quaternion)
   renderer.clear
 	renderer.render(skybox_scene, skybox_camera);
   renderer.clear_depth
