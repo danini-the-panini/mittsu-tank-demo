@@ -182,10 +182,16 @@ def lift_tank(tank, amount)
   tank.rotation.x += amount
 end
 
+title_geometry = Mittsu::BoxGeometry.new(1.5, 1, 1)
+title_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai.png')
+title_material = Mittsu::MeshBasicMaterial.new(map: title_texture)
+title_panel = Mittsu::Mesh.new(title_geometry, title_material)
+title_panel.position.y = +0.5
+title_panel.position.z = +2.5
+scene.add(title_panel)
+
 x = 0
-
 renderer.window.run do
-
   shiny_balls.each do |ball|
     distance = ball.position.distance_to(tank.position)
     if distance < 1.0
@@ -195,7 +201,6 @@ renderer.window.run do
       scene.remove(ball)
     end
   end
-
   if renderer.window.key_down?(GLFW_KEY_A)
     drive_ad(tank, JOYSTICK_SENSITIVITY)
   end
