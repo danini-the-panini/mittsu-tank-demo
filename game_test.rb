@@ -16,7 +16,7 @@ renderer.shadow_map_type = Mittsu::PCFSoftShadowMap
 
 cube_map_texture = Mittsu::ImageUtils.load_texture_cube(
   [ 'rt', 'lf', 'up', 'dn', 'bk', 'ft' ].map { |path|
-    File.join File.dirname(__FILE__), "alpha-island_#{path}.png"
+    File.join File.dirname(__FILE__), "back_#{path}.png"
   }
 )
 
@@ -101,32 +101,54 @@ ball_geometry = Mittsu::SphereGeometry.new(1.0, 16, 16)
 ball_material = Mittsu::MeshPhongMaterial.new(env_map: cube_map_texture)
 shiny_balls = 10.times.map do
   ball = Mittsu::Mesh.new(ball_geometry, ball_material)
-  ball.position.set(rand * 5.0 - 2.5, 0.0, rand * 5.0 - 2.5)
-  scale = rand * 0.5 + 0.1
+  ball.position.set(rand * 35.0 - 10.0, rand * 25 + 5, rand * 35.0 - 40.0)
+  scale = 0.5
   ball.scale.set(scale, scale, scale)
   scene.add(ball)
   ball
 end
 
-object = loader.load('tank.obj', 'tank.mtl')
 
-object.print_tree
+title_geometry = Mittsu::BoxGeometry.new(1.7, 1.5, 0.1)
+title_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai.png')
+title_material = Mittsu::MeshBasicMaterial.new(map: title_texture)
+title_panel = Mittsu::Mesh.new(title_geometry, title_material)
+title_panel.rotation.y = Math::PI
+title_panel.rotation.x = Math::PI/6.0
+
+ending_geometry = Mittsu::BoxGeometry.new(1.7, 1.5, 0.1)
+ending_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai_end.png')
+ending_material = Mittsu::MeshBasicMaterial.new(map: ending_texture)
+ending_panel = Mittsu::Mesh.new(ending_geometry, ending_material)
+ending_panel.rotation.y = Math::PI
+ending_panel.rotation.x = Math::PI/6.0
+
+object = loader.load('tank.obj', 'tank.mtl')
 
 tank = Mittsu::Object3D.new
 body, wheels, turret, tracks, barrel = object.children.map { |o| o.children.first }
 object.children.each do |o|
   o.children.first.material.metal = true
+  tank.add(camera) if [body, wheels, tracks].include?(o.children.first)
 end
-[body, wheels, tracks].each do |o|
-  tank.add(camera)
-end
+
+title_panel.position.set(0.0, 1.53, -2.3)
+tank.add(title_panel)
+
+ending_panel.position.set(0.0, 1.53, -20)
+tank.add(ending_panel)
 
 turret.position.set(0.0, 0.17, -0.17)
 tank.add(turret)
 
-barrel.position.set(0.0, 0.05, 0.2)
-turret.add(barrel)
 
+loader = Mittsu::OBJMTLLoader.new
+tank = loader.load('drone.obj','drone.mtl')
+tank.scale.set(0.1,0.1,0.1)
+tank.print_tree
+
+
+tank.add(camera)
 tank.rotation.y = Math::PI
 scene.add(tank)
 
@@ -159,8 +181,6 @@ camera.position.y = 2.0
 camera.rotation.y = Math::PI
 camera.rotation.x = Math::PI/6.0
 
-/barrel.add(0)/
-
 renderer.window.on_resize do |width, height|
   renderer.set_viewport(0, 0, width, height)
   camera.aspect = skybox_camera.aspect = width.to_f / height.to_f
@@ -168,51 +188,27 @@ renderer.window.on_resize do |width, height|
   skybox_camera.update_projection_matrix
 end
 
-left_stick = Mittsu::Vector2.new
-right_stick = Mittsu::Vector2.new
-
 JOYSTICK_DEADZONE = 0.1
 JOYSTICK_SENSITIVITY = 0.05
 
-
-
-#左右移動
-/def turn_tank(tank, turret, amount)
-  turret.rotation.y -= amount
-  tank.rotation.y += amount
-end/
 def drive_ad(tank, amount)
   tank.translate_x(amount)
 end
-
 
 #前後移動
 def drive_ws(tank, amount)
   tank.translate_z(amount)
 end
 
-
 #上下移動
 def drive_ud(tank, amount)
   tank.translate_y(amount)
 end
 
-
 #左右カメラ移動
 def rotate_tank(tank, amount)
   tank.rotation.y += amount
 end
-
-=begin
-#上下カメラ移動
-def lift_camera(camaera, amount)
-  camera.rotation.x += amount
-  if camera.rotation.x > Math::PI/36.0
-    camera.rotation.x = Math::PI/36.0
-  elsif camera.rotation.x < -Math::PI/6.0
-    camera.rotation.x = -Math::PI/6.0
-  end
-=end
 
 #上下カメラ移動
 def lift_tank(tank, amount)
@@ -220,30 +216,25 @@ def lift_tank(tank, amount)
 end
 
 
-
-
-
-
-
 x = 0
+y = 0
 renderer.window.run do
-  if renderer.window.joystick_present?
-    axes = renderer.window.joystick_axes.map do |axis|
-      axis.abs < JOYSTICK_DEADZONE ? 0.0 : axis * JOYSTICK_SENSITIVITY
+  shiny_balls.each do |ball|
+    distance = ball.position.distance_to(tank.position)
+    if distance < 1.0
+      # 配列から削除
+      shiny_balls.delete(ball)
+      # シーンから削除
+      scene.remove(ball)
+      y = y + 1
     end
-    left_stick.set(axes[0], axes[1])
-    right_stick.set(axes[2], axes[3])
-
-    drive_tank(tank, -left_stick.y)
-    turn_tank(tank, turret, -left_stick.x)
-    rotate_turret(turret, -right_stick.x)
-    lift_barrel(barrel, right_stick.y)
   end
 
 
 
-
-
+  if renderer.window.key_down?(GLFW_KEY_SPACE)
+    title_panel.position.z = -20
+  end
 
 
   if renderer.window.key_down?(GLFW_KEY_A)
@@ -285,31 +276,20 @@ renderer.window.run do
     rotate_tank(tank, -JOYSTICK_SENSITIVITY)
   end
 
-
-  if renderer.window.key_down?(GLFW_KEY_UP)
-    lift_tank(tank, -JOYSTICK_SENSITIVITY)
-  end
-
-
-  if renderer.window.key_down?(GLFW_KEY_DOWN)
-    lift_tank(tank, JOYSTICK_SENSITIVITY)
-  end
-
-
-
   shiny_balls.each_with_index do |ball, i|
     ball.position.y = Math::sin(x * 0.005 + i.to_f) * 3.0 + 4.0
   end
   x += 1
 
-  skybox_camera.quaternion.copy(camera.get_world_quaternion)
 
+  if y == 10
+    ending_panel.position.z = -2.3
+  end
+
+  skybox_camera.quaternion.copy(camera.get_world_quaternion)
   renderer.clear
-	renderer.render(skybox_scene, skybox_camera);
+	renderer.render(skybox_scene, skybox_camera)
   renderer.clear_depth
   renderer.render(scene, camera)
-
-  barrel_forward=barrel.get_world_direction
-  puts barrel_forward
-
+  
 end
