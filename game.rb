@@ -162,9 +162,6 @@ renderer.window.on_resize do |width, height|
   skybox_camera.update_projection_matrix
 end
 
-left_stick = Mittsu::Vector2.new
-right_stick = Mittsu::Vector2.new
-
 JOYSTICK_DEADZONE = 0.1
 JOYSTICK_SENSITIVITY = 0.05
 
