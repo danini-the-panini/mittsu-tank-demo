@@ -15,7 +15,7 @@ renderer.shadow_map_enabled = true
 renderer.shadow_map_type = Mittsu::PCFSoftShadowMap
 
 cube_map_texture = Mittsu::ImageUtils.load_texture_cube(
-  [ 'rt', 'lf', 'up', 'dn', 'bk', 'ft' ].map { |path|
+  [ 'rt', 'lf', 'up', 'dn2', 'bk', 'ft' ].map { |path|
     File.join File.dirname(__FILE__), "back_#{path}.png"
   }
 )
@@ -45,8 +45,8 @@ end
 floor = Mittsu::Mesh.new(
   Mittsu::BoxGeometry.new(1.0, 1.0, 1.0),
   Mittsu::MeshPhongMaterial.new(
-    map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './back2_dn.png').tap { |t| set_repeat(t) },
-    normal_map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './back2_dn.png').tap { |t| set_repeat(t) }
+    map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './back_dn2.png').tap { |t| set_repeat(t) },
+    normal_map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './back_dn2.png').tap { |t| set_repeat(t) }
   )
 )
 
@@ -54,6 +54,58 @@ guround_y=-20.0
 floor.scale.set(10000.0, 10.0, 10000.0)
 floor.position.y = guround_y
 scene.add(floor)
+loader = Mittsu::OBJMTLLoader.new
+
+things = [
+  'Kaktus',
+  'collumn',
+  'magicrock',
+  'rock',
+  'skull',
+  'stone',
+  'tent'
+].map do |name|
+  [name, loader.load("#{name}/#{name}.obj", "#{name}.mtl").tap do |thing|
+    thing.position.set(rand * 10.0 - 5.0, 0.0, rand * 10.0 - 5.0)
+    thing.rotation.y = rand * Math::PI * 2.0
+    thing.children.grep(Mittsu::Mesh).each { |o| o.material.side = Mittsu::DoubleSide }
+    scene.add(thing)
+  end]
+end.to_h
+
+things['Kaktus'].scale.set(1, 1, 1)
+things['Kaktus'].position.y=guround_y+5.0
+
+things['skull'].scale.set(0.5, 0.5, 0.5)
+
+
+things['tent'].position.y=guround_y+5.0
+
+things['collumn'].tap { |c|
+  c.scale.set(4.0, 4.0, 4.0)
+  c.position.y = guround_y+2.0
+}
+things['rock'].tap { |c|
+  c.scale.set(4.0, 4.0, 4.0)
+  c.position.y = guround_y+1.0
+}
+things['magicrock'].tap { |c|
+  c.scale.set(4.0, 4.0, 4.0)
+  c.position.y = guround_y+1.0
+}
+things['stone'].tap { |c|
+  c.scale.set(10,10,10)
+  c.position.y = guround_y+0.5
+}
+
+things.values.each do |thing|
+  3.times { thing.clone.tap do |thing2|
+    thing2.position.set(rand * 10.0 - 5.0, thing.position.y, rand * 10.0 - 5.0)
+    thing2.rotation.set(0.0, rand * Math::PI * 2.0, 0.0, 'XYZ')
+    scene.add(thing2)
+  end }
+end
+
 
 ball_geometry = Mittsu::SphereGeometry.new(1.0, 16, 16)
 ball_material = Mittsu::MeshPhongMaterial.new(env_map: cube_map_texture)
