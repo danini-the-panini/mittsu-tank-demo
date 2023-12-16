@@ -108,6 +108,7 @@ shiny_balls = 10.times.map do
   ball
 end
 
+
 title_geometry = Mittsu::BoxGeometry.new(1.7, 1.5, 0.1)
 title_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai.png')
 title_material = Mittsu::MeshBasicMaterial.new(map: title_texture)
@@ -140,9 +141,14 @@ tank.add(ending_panel)
 turret.position.set(0.0, 0.17, -0.17)
 tank.add(turret)
 
-barrel.position.set(0.0, 0.05, 0.2)
-turret.add(barrel)
 
+loader = Mittsu::OBJMTLLoader.new
+tank = loader.load('drone.obj','drone.mtl')
+tank.scale.set(0.1,0.1,0.1)
+tank.print_tree
+
+
+tank.add(camera)
 tank.rotation.y = Math::PI
 scene.add(tank)
 
@@ -209,11 +215,10 @@ def lift_tank(tank, amount)
   tank.rotation.x += amount
 end
 
+
 x = 0
 y = 0
-
 renderer.window.run do
-
   shiny_balls.each do |ball|
     distance = ball.position.distance_to(tank.position)
     if distance < 1.0
@@ -226,9 +231,11 @@ renderer.window.run do
   end
 
 
+
   if renderer.window.key_down?(GLFW_KEY_SPACE)
     title_panel.position.z = -20
   end
+
 
   if renderer.window.key_down?(GLFW_KEY_A)
     drive_ad(tank, JOYSTICK_SENSITIVITY)
@@ -284,5 +291,5 @@ renderer.window.run do
 	renderer.render(skybox_scene, skybox_camera)
   renderer.clear_depth
   renderer.render(scene, camera)
-
+  
 end
