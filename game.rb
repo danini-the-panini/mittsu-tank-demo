@@ -124,15 +124,11 @@ ending_panel.rotation.x = Math::PI/6.0
 
 object = loader.load('tank.obj', 'tank.mtl')
 
-object.print_tree
-
 tank = Mittsu::Object3D.new
 body, wheels, turret, tracks, barrel = object.children.map { |o| o.children.first }
 object.children.each do |o|
   o.children.first.material.metal = true
-end
-[body, wheels, tracks].each do |o|
-  tank.add(camera)
+  tank.add(camera) if [body, wheels, tracks].include?(o.children.first)
 end
 
 title_panel.position.set(0.0, 1.53, -2.3)
@@ -179,8 +175,6 @@ camera.position.y = 2.0
 camera.rotation.y = Math::PI
 camera.rotation.x = Math::PI/6.0
 
-/barrel.add(0)/
-
 renderer.window.on_resize do |width, height|
   renderer.set_viewport(0, 0, width, height)
   camera.aspect = skybox_camera.aspect = width.to_f / height.to_f
@@ -188,52 +182,27 @@ renderer.window.on_resize do |width, height|
   skybox_camera.update_projection_matrix
 end
 
-left_stick = Mittsu::Vector2.new
-right_stick = Mittsu::Vector2.new
-
 JOYSTICK_DEADZONE = 0.1
 JOYSTICK_SENSITIVITY = 0.05
 
-
-
-#左右移動
-/def turn_tank(tank, turret, amount)
-  turret.rotation.y -= amount
-  tank.rotation.y += amount
-end/
 def drive_ad(tank, amount)
   tank.translate_x(amount)
 end
-
 
 #前後移動
 def drive_ws(tank, amount)
   tank.translate_z(amount)
 end
 
-
 #上下移動
 def drive_ud(tank, amount)
   tank.translate_y(amount)
 end
 
-
-
 #左右カメラ移動
 def rotate_tank(tank, amount)
   tank.rotation.y += amount
 end
-
-=begin
-#上下カメラ移動
-def lift_camera(camaera, amount)
-  camera.rotation.x += amount
-  if camera.rotation.x > Math::PI/36.0
-    camera.rotation.x = Math::PI/36.0
-  elsif camera.rotation.x < -Math::PI/6.0
-    camera.rotation.x = -Math::PI/6.0
-  end
-=end
 
 #上下カメラ移動
 def lift_tank(tank, amount)
@@ -243,21 +212,7 @@ end
 x = 0
 y = 0
 
-
 renderer.window.run do
-  if renderer.window.joystick_present?
-    axes = renderer.window.joystick_axes.map do |axis|
-      axis.abs < JOYSTICK_DEADZONE ? 0.0 : axis * JOYSTICK_SENSITIVITY
-    end
-    left_stick.set(axes[0], axes[1])
-    right_stick.set(axes[2], axes[3])
-
-    drive_tank(tank, -left_stick.y)
-    turn_tank(tank, turret, -left_stick.x)
-    rotate_turret(turret, -right_stick.x)
-    lift_barrel(barrel, right_stick.y)
-  end
-
 
   shiny_balls.each do |ball|
     distance = ball.position.distance_to(tank.position)
@@ -270,10 +225,10 @@ renderer.window.run do
     end
   end
 
+
   if renderer.window.key_down?(GLFW_KEY_SPACE)
     title_panel.position.z = -20
   end
-
 
   if renderer.window.key_down?(GLFW_KEY_A)
     drive_ad(tank, JOYSTICK_SENSITIVITY)
@@ -319,17 +274,15 @@ renderer.window.run do
   end
   x += 1
 
+
   if y == 10
     ending_panel.position.z = -2.3
   end
 
   skybox_camera.quaternion.copy(camera.get_world_quaternion)
   renderer.clear
-	renderer.render(skybox_scene, skybox_camera);
+	renderer.render(skybox_scene, skybox_camera)
   renderer.clear_depth
   renderer.render(scene, camera)
-
-  /barrel_forward=barrel.get_world_direction
-  puts barrel_forward/
 
 end
