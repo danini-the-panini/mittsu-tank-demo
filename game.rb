@@ -108,21 +108,14 @@ shiny_balls = 10.times.map do
   ball
 end
 
-object = loader.load('tank.obj', 'tank.mtl')
 
-tank = Mittsu::Object3D.new
-body, wheels, turret, tracks, barrel = object.children.map { |o| o.children.first }
-object.children.each do |o|
-  o.children.first.material.metal = true
-  tank.add(camera) if [body, wheels, tracks].include?(o.children.first)
-end
+loader = Mittsu::OBJMTLLoader.new
+tank = loader.load('drone.obj','drone.mtl')
+tank.scale.set(0.1,0.1,0.1)
+tank.print_tree
 
-turret.position.set(0.0, 0.17, -0.17)
-tank.add(turret)
 
-barrel.position.set(0.0, 0.05, 0.2)
-turret.add(barrel)
-
+tank.add(camera)
 tank.rotation.y = Math::PI
 scene.add(tank)
 
@@ -252,5 +245,5 @@ renderer.window.run do
 	renderer.render(skybox_scene, skybox_camera)
   renderer.clear_depth
   renderer.render(scene, camera)
-
+  
 end
