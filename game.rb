@@ -101,19 +101,19 @@ ball_geometry = Mittsu::SphereGeometry.new(1.0, 16, 16)
 ball_material = Mittsu::MeshPhongMaterial.new(env_map: cube_map_texture)
 shiny_balls = 10.times.map do
   ball = Mittsu::Mesh.new(ball_geometry, ball_material)
-  ball.position.set(rand * 35.0 - 2.5, rand * 25 + 5, rand * 35.0 - 2.5)
+  ball.position.set(rand * 35.0 - 10.0, rand * 25 + 5, rand * 35.0 - 40.0)
   scale = 0.5
   ball.scale.set(scale, scale, scale)
   scene.add(ball)
   ball
 end
 
-object = loader.load('tank.obj', 'tank.mtl')
-
-object.print_tree
-
-tank = Mittsu::Object3D.new
-body, wheels, turret, tracks, barrel = object.children.map { |o| o.children.first }
+loader = Mittsu::OBJMTLLoader.new
+tank = loader.load('drone.obj','drone.mtl')
+tank.scale.set(0.1,0.1,0.1)
+tank.print_tree
+/tank = Mittsu::Object3D.new/
+/body, wheels, turret, tracks, barrel = object.children.map { |o| o.children.first }
 object.children.each do |o|
   o.children.first.material.metal = true
 end
@@ -125,8 +125,9 @@ turret.position.set(0.0, 0.17, -0.17)
 tank.add(turret)
 
 barrel.position.set(0.0, 0.05, 0.2)
-turret.add(barrel)
+turret.add(barrel)/
 
+tank.add(camera)
 tank.rotation.y = Math::PI
 scene.add(tank)
 
@@ -287,19 +288,6 @@ renderer.window.run do
   if renderer.window.key_down?(GLFW_KEY_RIGHT)
     rotate_tank(tank, -JOYSTICK_SENSITIVITY)
   end
-
-
-  if renderer.window.key_down?(GLFW_KEY_UP)
-    lift_tank(tank, -JOYSTICK_SENSITIVITY)
-  end
-
-
-  if renderer.window.key_down?(GLFW_KEY_DOWN)
-    lift_tank(tank, JOYSTICK_SENSITIVITY)
-  end
-
-
-
 
   shiny_balls.each_with_index do |ball, i|
     ball.position.y = Math::sin(x * 0.005 + i.to_f) * 3.0 + 4.0
