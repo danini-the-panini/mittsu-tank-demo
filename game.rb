@@ -162,9 +162,6 @@ renderer.window.on_resize do |width, height|
   skybox_camera.update_projection_matrix
 end
 
-left_stick = Mittsu::Vector2.new
-right_stick = Mittsu::Vector2.new
-
 JOYSTICK_DEADZONE = 0.1
 JOYSTICK_SENSITIVITY = 0.05
 
@@ -195,18 +192,6 @@ end
 x = 0
 
 renderer.window.run do
-  if renderer.window.joystick_present?
-    axes = renderer.window.joystick_axes.map do |axis|
-      axis.abs < JOYSTICK_DEADZONE ? 0.0 : axis * JOYSTICK_SENSITIVITY
-    end
-    left_stick.set(axes[0], axes[1])
-    right_stick.set(axes[2], axes[3])
-
-    drive_tank(tank, -left_stick.y)
-    turn_tank(tank, turret, -left_stick.x)
-    rotate_turret(turret, -right_stick.x)
-    lift_barrel(barrel, right_stick.y)
-  end
 
   shiny_balls.each do |ball|
     distance = ball.position.distance_to(tank.position)
