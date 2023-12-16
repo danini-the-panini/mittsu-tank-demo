@@ -109,6 +109,39 @@ shiny_balls = 10.times.map do
 end
 
 
+title_geometry = Mittsu::BoxGeometry.new(1.7, 1.5, 0.1)
+title_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai.png')
+title_material = Mittsu::MeshBasicMaterial.new(map: title_texture)
+title_panel = Mittsu::Mesh.new(title_geometry, title_material)
+title_panel.rotation.y = Math::PI
+title_panel.rotation.x = Math::PI/6.0
+
+ending_geometry = Mittsu::BoxGeometry.new(1.7, 1.5, 0.1)
+ending_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai_end.png')
+ending_material = Mittsu::MeshBasicMaterial.new(map: ending_texture)
+ending_panel = Mittsu::Mesh.new(ending_geometry, ending_material)
+ending_panel.rotation.y = Math::PI
+ending_panel.rotation.x = Math::PI/6.0
+
+object = loader.load('tank.obj', 'tank.mtl')
+
+tank = Mittsu::Object3D.new
+body, wheels, turret, tracks, barrel = object.children.map { |o| o.children.first }
+object.children.each do |o|
+  o.children.first.material.metal = true
+  tank.add(camera) if [body, wheels, tracks].include?(o.children.first)
+end
+
+title_panel.position.set(0.0, 1.53, -2.3)
+tank.add(title_panel)
+
+ending_panel.position.set(0.0, 1.53, -20)
+tank.add(ending_panel)
+
+turret.position.set(0.0, 0.17, -0.17)
+tank.add(turret)
+
+
 loader = Mittsu::OBJMTLLoader.new
 tank = loader.load('drone.obj','drone.mtl')
 tank.scale.set(0.1,0.1,0.1)
@@ -182,15 +215,9 @@ def lift_tank(tank, amount)
   tank.rotation.x += amount
 end
 
-title_geometry = Mittsu::BoxGeometry.new(1.5, 1, 1)
-title_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai.png')
-title_material = Mittsu::MeshBasicMaterial.new(map: title_texture)
-title_panel = Mittsu::Mesh.new(title_geometry, title_material)
-title_panel.position.y = +0.5
-title_panel.position.z = +2.5
-scene.add(title_panel)
 
 x = 0
+y = 0
 renderer.window.run do
   shiny_balls.each do |ball|
     distance = ball.position.distance_to(tank.position)
@@ -199,8 +226,17 @@ renderer.window.run do
       shiny_balls.delete(ball)
       # シーンから削除
       scene.remove(ball)
+      y = y + 1
     end
   end
+
+
+
+  if renderer.window.key_down?(GLFW_KEY_SPACE)
+    title_panel.position.z = -20
+  end
+
+
   if renderer.window.key_down?(GLFW_KEY_A)
     drive_ad(tank, JOYSTICK_SENSITIVITY)
   end
@@ -244,6 +280,11 @@ renderer.window.run do
     ball.position.y = Math::sin(x * 0.005 + i.to_f) * 3.0 + 4.0
   end
   x += 1
+
+
+  if y == 10
+    ending_panel.position.z = -2.3
+  end
 
   skybox_camera.quaternion.copy(camera.get_world_quaternion)
   renderer.clear
