@@ -114,14 +114,14 @@ title_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__)
 title_material = Mittsu::MeshBasicMaterial.new(map: title_texture)
 title_panel = Mittsu::Mesh.new(title_geometry, title_material)
 title_panel.rotation.y = Math::PI
-title_panel.rotation.x = Math::PI/6.0
+title_panel.rotation.x = -Math::PI/6.0
 
 ending_geometry = Mittsu::BoxGeometry.new(1.7, 1.5, 0.1)
 ending_texture = Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), '3samurai_end.png')
 ending_material = Mittsu::MeshBasicMaterial.new(map: ending_texture)
 ending_panel = Mittsu::Mesh.new(ending_geometry, ending_material)
 ending_panel.rotation.y = Math::PI
-ending_panel.rotation.x = Math::PI/6.0
+ending_panel.rotation.x = -Math::PI/6.0
 
 object = loader.load('tank.obj', 'tank.mtl')
 
@@ -132,11 +132,13 @@ object.children.each do |o|
   tank.add(camera) if [body, wheels, tracks].include?(o.children.first)
 end
 
-title_panel.position.set(0.0, 1.53, -2.3)
-tank.add(title_panel)
+panel_position_y = 0.9
 
-ending_panel.position.set(0.0, 1.53, -20)
-tank.add(ending_panel)
+title_panel.position.set(0.0, panel_position_y, 0)
+scene.add(title_panel)
+
+# ending_panel.position.set(0.0, panel_position_y, 20)
+# scene.add(ending_panel)
 
 turret.position.set(0.0, 0.17, -0.17)
 tank.add(turret)
@@ -149,6 +151,7 @@ tank.print_tree
 
 
 tank.add(camera)
+tank.position.set(0, 1, 0)
 tank.rotation.y = Math::PI
 scene.add(tank)
 
@@ -176,8 +179,8 @@ light.shadow_camera_fov = 60.0
 light.shadow_camera_visible = false
 scene.add(light)
 
-camera.position.z = -3.0
-camera.position.y = 2.0
+camera.position.z = -7
+camera.position.y = 3.0
 camera.rotation.y = Math::PI
 camera.rotation.x = Math::PI/6.0
 
@@ -218,6 +221,7 @@ end
 
 x = 0
 y = 0
+z = 0
 renderer.window.run do
   shiny_balls.each do |ball|
     distance = ball.position.distance_to(tank.position)
@@ -230,50 +234,50 @@ renderer.window.run do
     end
   end
 
-
-
   if renderer.window.key_down?(GLFW_KEY_SPACE)
-    title_panel.position.z = -20
+    title_panel.visible = false
+    z = 1
   end
 
-
-  if renderer.window.key_down?(GLFW_KEY_A)
-    drive_ad(tank, JOYSTICK_SENSITIVITY)
-  end
-
-
-  if renderer.window.key_down?(GLFW_KEY_D)
-    drive_ad(tank, -JOYSTICK_SENSITIVITY)
-  end
+  if z == 1
+    if renderer.window.key_down?(GLFW_KEY_A)
+      drive_ad(tank, JOYSTICK_SENSITIVITY)
+    end
 
 
-  if renderer.window.key_down?(GLFW_KEY_W)
-    drive_ws(tank, JOYSTICK_SENSITIVITY)
-  end
+    if renderer.window.key_down?(GLFW_KEY_D)
+      drive_ad(tank, -JOYSTICK_SENSITIVITY)
+    end
 
 
-  if renderer.window.key_down?(GLFW_KEY_S)
-    drive_ws(tank, -JOYSTICK_SENSITIVITY)
-  end
+    if renderer.window.key_down?(GLFW_KEY_W)
+      drive_ws(tank, JOYSTICK_SENSITIVITY)
+    end
 
 
-  if renderer.window.key_down?(GLFW_KEY_SPACE)
-    drive_ud(tank, JOYSTICK_SENSITIVITY)
-  end
+    if renderer.window.key_down?(GLFW_KEY_S)
+      drive_ws(tank, -JOYSTICK_SENSITIVITY)
+    end
 
 
-  if renderer.window.key_down?(GLFW_KEY_LEFT_SHIFT) && tank.position.y>0
-    drive_ud(tank, -JOYSTICK_SENSITIVITY)
-  end
+    if renderer.window.key_down?(GLFW_KEY_SPACE)
+      drive_ud(tank, JOYSTICK_SENSITIVITY)
+    end
 
 
-  if renderer.window.key_down?(GLFW_KEY_LEFT)
-    rotate_tank(tank, JOYSTICK_SENSITIVITY)
-  end
+    if renderer.window.key_down?(GLFW_KEY_LEFT_SHIFT) && tank.position.y>0
+      drive_ud(tank, -JOYSTICK_SENSITIVITY)
+    end
 
 
-  if renderer.window.key_down?(GLFW_KEY_RIGHT)
-    rotate_tank(tank, -JOYSTICK_SENSITIVITY)
+    if renderer.window.key_down?(GLFW_KEY_LEFT)
+      rotate_tank(tank, JOYSTICK_SENSITIVITY)
+    end
+
+
+    if renderer.window.key_down?(GLFW_KEY_RIGHT)
+      rotate_tank(tank, -JOYSTICK_SENSITIVITY)
+    end
   end
 
   shiny_balls.each_with_index do |ball, i|
@@ -282,8 +286,12 @@ renderer.window.run do
   x += 1
 
 
-  if y == 10
-    ending_panel.position.z = -2.3
+  if y == 1
+    ending_panel.position.set(tank.position.x, tank.position.y, tank.position.z)
+    ending_panel.rotation.y = tank.rotation.y
+    tank.rotation.y = Math::PI
+    ending_panel.rotation.z = 0
+    scene.add(ending_panel)
   end
 
   skybox_camera.quaternion.copy(camera.get_world_quaternion)
