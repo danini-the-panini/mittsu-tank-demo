@@ -16,12 +16,14 @@ renderer.shadow_map_type = Mittsu::PCFSoftShadowMap
 
 cube_map_texture = Mittsu::ImageUtils.load_texture_cube(
   [ 'rt', 'lf', 'up', 'dn', 'bk', 'ft' ].map { |path|
-    File.join File.dirname(__FILE__), "alpha-island_#{path}.png"
+    File.join File.dirname(__FILE__), "back_#{path}.png"
   }
 )
 
 shader = Mittsu::ShaderLib[:cube]
 shader.uniforms['tCube'].value = cube_map_texture
+
+
 
 skybox_material = Mittsu::ShaderMaterial.new({
   fragment_shader: shader.fragment_shader,
@@ -43,59 +45,15 @@ end
 floor = Mittsu::Mesh.new(
   Mittsu::BoxGeometry.new(1.0, 1.0, 1.0),
   Mittsu::MeshPhongMaterial.new(
-    map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert.png').tap { |t| set_repeat(t) },
-    normal_map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './desert-normal.png').tap { |t| set_repeat(t) }
+    map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './back2_dn.png').tap { |t| set_repeat(t) },
+    normal_map: Mittsu::ImageUtils.load_texture(File.join File.dirname(__FILE__), './back2_dn.png').tap { |t| set_repeat(t) }
   )
 )
+
+guround_y=-20.0
 floor.scale.set(10000.0, 10.0, 10000.0)
-floor.position.y = -5.0
+floor.position.y = guround_y
 scene.add(floor)
-
-loader = Mittsu::OBJMTLLoader.new
-
-things = [
-  'Kaktus',
-  'collumn',
-  'magicrock',
-  'rock',
-  'skull',
-  'stone',
-  'tent'
-].map do |name|
-  [name, loader.load("#{name}/#{name}.obj", "#{name}.mtl").tap do |thing|
-    thing.position.set(rand * 10.0 - 5.0, 0.0, rand * 10.0 - 5.0)
-    thing.rotation.y = rand * Math::PI * 2.0
-    thing.children.grep(Mittsu::Mesh).each { |o| o.material.side = Mittsu::DoubleSide }
-    scene.add(thing)
-  end]
-end.to_h
-
-things['Kaktus'].scale.set(0.1, 0.1, 0.1)
-things['skull'].scale.set(0.1, 0.1, 0.1)
-things['collumn'].tap { |c|
-  c.scale.set(2.0, 2.0, 2.0)
-  c.position.y = -1.0
-}
-things['rock'].tap { |c|
-  c.scale.set(2.0, 2.0, 2.0)
-  c.position.y = -2.0
-}
-things['magicrock'].tap { |c|
-  c.scale.set(2.0, 2.0, 2.0)
-  c.position.y = -2.0
-}
-things['stone'].tap { |c|
-  c.scale.set(5.0, 5.0, 5.0)
-  c.position.y = -2.5
-}
-
-things.values.each do |thing|
-  3.times { thing.clone.tap do |thing2|
-    thing2.position.set(rand * 10.0 - 5.0, thing.position.y, rand * 10.0 - 5.0)
-    thing2.rotation.set(0.0, rand * Math::PI * 2.0, 0.0, 'XYZ')
-    scene.add(thing2)
-  end }
-end
 
 ball_geometry = Mittsu::SphereGeometry.new(1.0, 16, 16)
 ball_material = Mittsu::MeshPhongMaterial.new(env_map: cube_map_texture)
@@ -179,8 +137,10 @@ light.shadow_camera_fov = 60.0
 light.shadow_camera_visible = false
 scene.add(light)
 
+
 camera.position.z = -7
 camera.position.y = 3.0
+
 camera.rotation.y = Math::PI
 camera.rotation.x = Math::PI/6.0
 
@@ -233,11 +193,13 @@ renderer.window.run do
       y = y + 1
     end
   end
+ 
 
   if renderer.window.key_down?(GLFW_KEY_SPACE)
     title_panel.visible = false
     z = 1
   end
+
 
   if z == 1
     if renderer.window.key_down?(GLFW_KEY_A)
@@ -267,6 +229,10 @@ renderer.window.run do
 
     if renderer.window.key_down?(GLFW_KEY_LEFT_SHIFT) && tank.position.y>0
       drive_ud(tank, -JOYSTICK_SENSITIVITY)
+    end
+
+    if renderer.window.key_down?(GLFW_KEY_LEFT_SHIFT) && tank.position.y>guround_y
+    drive_ud(tank, -JOYSTICK_SENSITIVITY)
     end
 
 
