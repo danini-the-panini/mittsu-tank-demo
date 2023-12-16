@@ -16,7 +16,7 @@ renderer.shadow_map_type = Mittsu::PCFSoftShadowMap
 
 cube_map_texture = Mittsu::ImageUtils.load_texture_cube(
   [ 'rt', 'lf', 'up', 'dn', 'bk', 'ft' ].map { |path|
-    File.join File.dirname(__FILE__), "alpha-island_#{path}.png"
+    File.join File.dirname(__FILE__), "back_#{path}.png"
   }
 )
 
@@ -155,8 +155,8 @@ light.shadow_camera_fov = 60.0
 light.shadow_camera_visible = false
 scene.add(light)
 
-camera.position.z = -3.0
-camera.position.y = 2.0
+camera.position.z = - 4.0
+camera.position.y = + 3.0
 camera.rotation.y = Math::PI
 camera.rotation.x = Math::PI/6.0
 
@@ -248,10 +248,11 @@ renderer.window.run do
       scene.remove(ball)
     end
   end
-
+ 
 
   if renderer.window.key_down?(GLFW_KEY_A)
     drive_ad(tank, JOYSTICK_SENSITIVITY)
+    
   end
 
 
