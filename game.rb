@@ -1,4 +1,4 @@
-require 'mittsu'
+require 'mittsu/opengl'
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -9,7 +9,7 @@ skybox_scene = Mittsu::Scene.new
 camera = Mittsu::PerspectiveCamera.new(75.0, ASPECT, 0.1, 1000.0)
 skybox_camera = Mittsu::PerspectiveCamera.new(75.0, ASPECT, 1.0, 100.0)
 
-renderer = Mittsu::OpenGLRenderer.new width: SCREEN_WIDTH, height: SCREEN_HEIGHT, title: 'Hello World'
+renderer = Mittsu::OpenGL::Renderer.new width: SCREEN_WIDTH, height: SCREEN_HEIGHT, title: 'Hello World'
 renderer.auto_clear = false
 renderer.shadow_map_enabled = true
 renderer.shadow_map_type = Mittsu::PCFSoftShadowMap
@@ -20,7 +20,7 @@ cube_map_texture = Mittsu::ImageUtils.load_texture_cube(
   }
 )
 
-shader = Mittsu::ShaderLib[:cube]
+shader = Mittsu::OpenGL::Shader::Lib[:cube]
 shader.uniforms['tCube'].value = cube_map_texture
 
 skybox_material = Mittsu::ShaderMaterial.new({
@@ -162,10 +162,17 @@ camera.rotation.x = Math::PI/6.0
 barrel.add(camera)
 
 renderer.window.on_resize do |width, height|
-  renderer.set_viewport(0, 0, width, height)
+  renderer.set_size(width, height)
   camera.aspect = skybox_camera.aspect = width.to_f / height.to_f
   camera.update_projection_matrix
   skybox_camera.update_projection_matrix
+end
+
+renderer.window.on_key_typed do |key|
+  case key
+  when GLFW::KEY_SPACE
+    renderer.take_screenshot("screenshot.png")
+  end
 end
 
 left_stick = Mittsu::Vector2.new
@@ -211,28 +218,28 @@ renderer.window.run do
     lift_barrel(barrel, right_stick.y)
   end
 
-  if renderer.window.key_down?(GLFW_KEY_A)
+  if renderer.window.key_down?(GLFW::KEY_A)
     turn_tank(tank, turret, JOYSTICK_SENSITIVITY)
   end
-  if renderer.window.key_down?(GLFW_KEY_D)
+  if renderer.window.key_down?(GLFW::KEY_D)
     turn_tank(tank, turret, -JOYSTICK_SENSITIVITY)
   end
-  if renderer.window.key_down?(GLFW_KEY_LEFT)
+  if renderer.window.key_down?(GLFW::KEY_LEFT)
     rotate_turret(turret, JOYSTICK_SENSITIVITY)
   end
-  if renderer.window.key_down?(GLFW_KEY_RIGHT)
+  if renderer.window.key_down?(GLFW::KEY_RIGHT)
     rotate_turret(turret, -JOYSTICK_SENSITIVITY)
   end
-  if renderer.window.key_down?(GLFW_KEY_W)
+  if renderer.window.key_down?(GLFW::KEY_W)
     drive_tank(tank, JOYSTICK_SENSITIVITY)
   end
-  if renderer.window.key_down?(GLFW_KEY_S)
+  if renderer.window.key_down?(GLFW::KEY_S)
     drive_tank(tank, -JOYSTICK_SENSITIVITY)
   end
-  if renderer.window.key_down?(GLFW_KEY_UP)
+  if renderer.window.key_down?(GLFW::KEY_UP)
     lift_barrel(barrel, -JOYSTICK_SENSITIVITY)
   end
-  if renderer.window.key_down?(GLFW_KEY_DOWN)
+  if renderer.window.key_down?(GLFW::KEY_DOWN)
     lift_barrel(barrel, JOYSTICK_SENSITIVITY)
   end
 
